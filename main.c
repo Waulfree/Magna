@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
+#include <stdlib.h>
 
 #define STACK_LEN 32
 
