@@ -1,3 +1,7 @@
+#ifdef MAGNA_MODULE
+#include "chartools.h"
+#endif
+
 char char_tab[0xFF];
 
 void init_char_tab()
