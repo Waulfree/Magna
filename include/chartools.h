@@ -22,5 +22,18 @@ enum char_type {
 	CHAR_OTHER
 };
 
+#ifdef MAGNA_MODULE
+extern void init_char_tab()
+extern char get_char_type(const unsigned char);
+extern char char_is_space(const unsigned char);
+extern char char_is_lfeed(const unsigned char);
+extern char char_is_alpha(const unsigned char);
+extern char char_is_num(const unsigned char);
+extern char char_is_dquote(const unsigned char);
+extern char char_is_other(const unsigned char);
+#else
+#include "chartools.c"
+#endif
+
 #define MAGNA_CHARTOOLS_HEADER_GUARD
 #endif
