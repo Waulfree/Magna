@@ -144,6 +144,33 @@ const char *tok_names[] = {
 	"TOK_END"
 };
 
+struct line {
+	const char *begin;
+	size_t num;
+};
+
+struct lex {
+	char *begin;
+	char *end;
+};
+
+struct ident {
+	void *dummy;
+	/* dummy */
+};
+
+union unitype {
+	struct ident *id;
+	struct lex lex;
+	float f;
+	int i;
+};
+
+struct token {
+	enum tok_type type;
+	union unitype val;
+};
+
 enum op_type {
 	OP_NOP,
 	OP_END,
