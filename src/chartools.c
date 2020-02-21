@@ -1,3 +1,5 @@
+#define MAGNA_MODULE
+
 #ifdef MAGNA_MODULE
 #include "chartools.h"
 #endif
@@ -19,16 +21,16 @@ void init_char_tab()
 	char_tab['\0'] = CHAR_NULL;
 	char_tab['\n'] = CHAR_LFEED;
 	char_tab[' '] = char_tab['\t'] = CHAR_SPACE;
-	char_tab['\"'] = CHAR_DQUOTE;
 	char_tab['/'] = CHAR_SLASH;
+	char_tab['^'] = CHAR_CARET;
+	char_tab['\"'] = CHAR_DQUOTE;
 
+	char_tab['='] = CHAR_EQUALS;
+	char_tab['-'] = CHAR_MINUS;
+	char_tab['+'] = CHAR_PLUS;
+	char_tab['*'] = CHAR_ASTERISK;
 	char_tab['('] = CHAR_LPAREN;
 	char_tab[')'] = CHAR_RPAREN;
-	char_tab['['] = CHAR_LBRACK;
-	char_tab[']'] = CHAR_RBRACK;
-	char_tab['='] = CHAR_EQUALS;
-	char_tab['$'] = CHAR_DOLLAR;
-	char_tab['@'] = CHAR_ATSIGN;
 	char_tab[';'] = CHAR_SEMICOL;
 }
 
@@ -44,7 +46,7 @@ char char_is_space(const unsigned char c)
 
 char char_is_lfeed(const unsigned char c)
 {
-	return char_tab[c] == CHAR_LINE_FEED;
+	return char_tab[c] == CHAR_LFEED;
 }
 
 char char_is_alpha(const unsigned char c)
@@ -59,7 +61,7 @@ char char_is_num(const unsigned char c)
 
 char char_is_dquote(const unsigned char c)
 {
-	return char_tab[c] == CHAR_DOUBLE_QUOTE;
+	return char_tab[c] == CHAR_DQUOTE;
 }
 
 char char_is_other(const unsigned char c)

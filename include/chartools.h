@@ -1,29 +1,30 @@
 #ifndef MAGNA_CHARTOOLS_HEADER_GUARD
-
+ 
 enum char_type {
+	/* For individual case statements */
 	CHAR_NULL,
-	CHAR_SPACE,
 	CHAR_LFEED,
+	CHAR_SPACE,
 	CHAR_SLASH,
+	CHAR_CARET,
 	CHAR_DQUOTE,
 	CHAR_ALPHA,
 	CHAR_NUM,
 
-	/* Offset for grouped case statements */
-	CHAR_LPAREN,
-	CHAR_RPAREN
-	CHAR_LBRACK,
-	CHAR_RBRACK,
+	/* For united case statements */
 	CHAR_EQUALS,
-	CHAR_DOLLAR,
-	CHAR_ATSIGN,
+	CHAR_MINUS,
+	CHAR_PLUS,
+	CHAR_ASTERISK,
+	CHAR_LPAREN,
+	CHAR_RPAREN,
 	CHAR_SEMICOL,
 
 	CHAR_OTHER
 };
 
 #ifdef MAGNA_MODULE
-extern void init_char_tab()
+extern void init_char_tab();
 extern char get_char_type(const unsigned char);
 extern char char_is_space(const unsigned char);
 extern char char_is_lfeed(const unsigned char);
