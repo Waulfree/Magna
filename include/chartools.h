@@ -1,6 +1,15 @@
 #ifndef MAGNA_CHARTOOLS_HEADER_GUARD
  
 enum char_type {
+	/* For united case statements */
+	CHAR_EQUALS,
+	CHAR_MINUS,
+	CHAR_PLUS,
+	CHAR_ASTERISK,
+	CHAR_LPAREN,
+	CHAR_RPAREN,
+	CHAR_SEMICOL,
+	
 	/* For individual case statements */
 	CHAR_NULL,
 	CHAR_LFEED,
@@ -10,16 +19,7 @@ enum char_type {
 	CHAR_DQUOTE,
 	CHAR_ALPHA,
 	CHAR_NUM,
-
-	/* For united case statements */
-	CHAR_EQUALS,
-	CHAR_MINUS,
-	CHAR_PLUS,
-	CHAR_ASTERISK,
-	CHAR_LPAREN,
-	CHAR_RPAREN,
-	CHAR_SEMICOL,
-
+	
 	CHAR_OTHER
 };
 
