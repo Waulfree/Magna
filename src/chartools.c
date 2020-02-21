@@ -1,5 +1,3 @@
-#define MAGNA_MODULE
-
 #ifdef MAGNA_MODULE
 #include "chartools.h"
 #endif
