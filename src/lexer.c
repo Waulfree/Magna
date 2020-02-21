@@ -125,6 +125,5 @@ line_feed:
 	tok->line.num++;
 
 end:
-	printf("%i\n", tok->type);
 	return;
 }

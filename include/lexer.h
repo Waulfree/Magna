@@ -24,16 +24,19 @@ enum tok_type {
 };
 
 const char *tok_names[] = {
-	"TOK_NOP",
-	"TOK_END",
 	"TOK_EQU",
-	"TOK_ADD",
 	"TOK_SUB",
+	"TOK_ADD",
 	"TOK_MUL",
+	"TOK_ENTER",
+	"TOK_LEAVE",
+	"TOK_ENDSTAT",
+	"TOK_COMMENT",
+	"TOK_IDENT",
+	"TOK_NUM",
 	"TOK_DIV",
 	"TOK_POW",
-	"TOK_OPN",
-	"TOK_CLS"
+	"TOK_EOF",
 };
 
 struct line {

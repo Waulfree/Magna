@@ -6,43 +6,45 @@
 #define TOK_STACK_IS_NOT_EMPTY op_top < &op_stack[STACK_LEN]
 #define TOK_STACK_IS_EMPTY op_top == &op_stack[STACK_LEN]
 #define TOP_P prec[*op_top]/*.prior*/
-#define CUR_P prec[op]/*.prior*/
-#define LOPR *(lex_top + 1)
-#define ROPR *lex_top
+#define CUR_P prec[tok.type]/*.prior*/
+#define LOPR (arg_top + 1)->i
+#define ROPR arg_top->i
 
-int prec[] = {-1, 1, 2, 3, 3, 4, 4, 5, 0, 0};
+int prec[] = {2, 3, 3, 4, 0, 0, 1, 0, 0, 0, 4, 5, -1};
 
 void parse(const char *str)
 {
-	enum tok_type op = TOK_NOP;
-	const char *lex = str;
+	struct token tok;
 	
 	enum tok_type op_stack[STACK_LEN];
 	enum tok_type *op_top = &op_stack[STACK_LEN - 1];
 
-	int lex_stack[STACK_LEN];
-	int *lex_top = &lex_stack[STACK_LEN];
-	*op_top = TOK_NOP;
+	union unitype arg_stack[STACK_LEN];
+	union unitype *arg_top = &arg_stack[STACK_LEN];
+	
+	tok.lex.begin = tok.lex.end = (char *)str;
+	tok.type = TOK_SIZE;
+	*op_top = TOK_EOF;
 
 next_token:
-	if (*lex)
-		tokenize_next(&op, &lex);
-	else
+	if (tok.type == TOK_EOF)
 		goto end;
-
+	else
+		tokenize_next(&tok);
+		
 	/* Inductor handlers */
-	switch (op) {
+	switch (tok.type) {
 	/* Argument handler */
-	case TOK_ARG:
-		*--lex_top = atoi(lex);
+	case TOK_NUM:
+		*--arg_top = tok.val;
 		goto next_token;
 
 	/* Operator handlers */
 	case TOK_EQU:
 	case TOK_POW:
-	case TOK_OPN:
+	case TOK_ENTER:
 		goto induce;
-	case TOK_CLS:
+	case TOK_LEAVE:
 		goto reduce;
 
 	default:
@@ -57,10 +59,10 @@ reduce:
 
 	/* Reductor operator handlers */
 	switch (*op_top) {
-	case TOK_NOP:
+	case TOK_EOF:
 		printf("end\n");
 		goto next_token;
-	case TOK_OPN:
+	case TOK_ENTER:
 		op_top++;
 		goto next_token;
 
@@ -87,7 +89,7 @@ reduce:
 bop:
 		printf("%i\n", LOPR);
 		op_top++;
-		lex_top++;
+		arg_top++;
 		goto reduce;
 
 	default:	
@@ -97,9 +99,9 @@ bop:
 	}
 
 induce:
-	*--op_top = op;
+	*--op_top = tok.type;
 	goto next_token;
 
-end:
+end:	
 	return;
 }
