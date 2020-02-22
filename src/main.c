@@ -15,13 +15,26 @@
 	return 0;
 }*/
 
+#include <string.h>
+#include <stdio.h>
+
+#define MAX_STRLEN 0xFF
+
 int main(int argc, char *argv[])
 {
+	char str[MAX_STRLEN];
 	init_char_tab();
-	if (argc < 2)
-		printf("Not enough command line arguments.");
-	else
+	if (argc < 2) {
+		printf("Not enough command line arguments.\
+			\nEntering interactive mode (type 'q' to exit).\n\n");
+		while (strcmp(str, "q\n")) {
+			printf( ">> ");
+			fgets(str, MAX_STRLEN, stdin);
+			parse(str);
+		}
+	} else {
 		parse(argv[1]);
+	}
 	
 	return 0;
 }

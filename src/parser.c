@@ -83,7 +83,7 @@ reduce:
 	/* Reductor operator handlers */
 	switch (*op_top) {
 	case TOK_EOF:
-		printf("end\n");
+		printf("Sucess.\n\n");
 		goto end;
 	case TOK_ENTER:
 		op_top++;
