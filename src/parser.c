@@ -5,12 +5,27 @@
 
 #define TOK_STACK_IS_NOT_EMPTY op_top < &op_stack[STACK_LEN]
 #define TOK_STACK_IS_EMPTY op_top == &op_stack[STACK_LEN]
-#define TOP_P prec[*op_top]/*.prior*/
-#define CUR_P prec[tok.type]/*.prior*/
+#define TOP_P prior[*op_top]/*.prior*/
+#define CUR_P prior[tok.type]/*.prior*/
 #define LOPR (arg_top + 1)->i
 #define ROPR arg_top->i
 
-int prec[] = {2, 3, 3, 4, 0, 0, 1, 0, 0, 0, 4, 5, -1};
+/* Token priorities */
+int prior[] = {
+	2,		/*TOK_EQU*/
+	3,		/*TOK_SUB*/
+	3,		/*TOK_ADD*/
+	4,		/*TOK_MUL*/
+	PRIOR_UNDEF,	/*TOK_ENTER*/
+	PRIOR_UNDEF,	/*TOK_LEAVE*/
+	1,		/*TOK_ENDSTAT*/
+	PRIOR_UNDEF,	/*TOK_COMMENT*/
+	PRIOR_UNDEF,	/*TOK_IDENT*/
+	PRIOR_UNDEF,	/*TOK_NUM*/
+	4,		/*TOK_DIV*/
+	5,		/*TOK_POW*/
+	-1		/*TOK_EOF*/
+};
 
 void parse(const char *str)
 {

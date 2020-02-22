@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#define PRIOR_UNDEF 0
+
 enum tok_type {
 	/* Tokens that are compatible with char_type */
 	TOK_EQU = CHAR_EQUALS,
