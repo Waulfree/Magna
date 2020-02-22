@@ -56,7 +56,8 @@ next_char:
 		tok->type = TOK_STRING;
 		tok->lex.begin = ++tok->lex.end;
 		
-		/* Skip symbols and backslashed symbols until eof until EOF*/
+		/* Skip symbols and backslashed symbols
+		 * until EOF, newline or quote*/
 		for (; *tok->lex.end && *tok->lex.end != '\"'
 			&& ((*tok->lex.end == '\\' && *++tok->lex.end)
 			|| *tok->lex.end != '\n'); tok->lex.end++);

@@ -18,14 +18,14 @@ int prior[] = {
 	4,		/*TOK_MUL*/
 	PRIOR_UNDEF,	/*TOK_ENTER*/
 	PRIOR_UNDEF,	/*TOK_LEAVE*/
-	1,		/*TOK_ENDSTAT*/
+	PRIOR_UNDEF,	/*TOK_ENDSTAT*/
 	PRIOR_UNDEF,	/*TOK_COMMENT*/
 	PRIOR_UNDEF,	/*TOK_STRING*/
 	PRIOR_UNDEF,	/*TOK_IDENT*/
 	PRIOR_UNDEF,	/*TOK_NUM*/
 	4,		/*TOK_DIV*/
 	5,		/*TOK_POW*/
-	-1		/*TOK_EOF*/
+	PRIOR_UNDEF	/*TOK_EOF*/
 };
 
 void parse(const char *str)
@@ -44,12 +44,12 @@ void parse(const char *str)
 
 next_token:
 	if (tok.type == TOK_EOF) {
-		printf("Fatal error: unexpected eof.\n");
+		printf("Fatal error: unexpected EOF.\n");
 		goto end;
 	} else {
 		tokenize_next(&tok);
 	}
-		
+
 	/* Inductor handlers */
 	switch (tok.type) {
 	/* Argument handler */
@@ -65,6 +65,7 @@ next_token:
 	case TOK_POW:
 	case TOK_ENTER:
 		goto induce;
+	case TOK_ENDSTAT:
 	case TOK_LEAVE:
 		goto reduce;
 	
@@ -79,12 +80,14 @@ next_token:
 reduce:
 	if (TOP_P < CUR_P)
 		goto induce;
-
 	/* Reductor operator handlers */
 	switch (*op_top) {
 	case TOK_EOF:
+		if (tok.type != TOK_EOF)
+			goto next_token;
 		printf("Sucess.\n\n");
 		goto end;
+
 	case TOK_ENTER:
 		op_top++;
 		goto next_token;
@@ -108,7 +111,7 @@ reduce:
 		BOP_EVAL(=, pow(LOPR, ROPR), "^^");
 bop:	
 		printf("%i\n", LOPR);
-		numargs--;;
+		numargs--;
 		op_top++;
 		arg_top++;
 		goto reduce;
