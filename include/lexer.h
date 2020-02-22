@@ -16,6 +16,7 @@ enum tok_type {
 	
 	/* Free tokens */
 	TOK_COMMENT,
+	TOK_STRING,
 	TOK_IDENT,
 	TOK_NUM,
 	TOK_DIV,
@@ -34,6 +35,7 @@ const char *tok_names[] = {
 	"TOK_LEAVE",
 	"TOK_ENDSTAT",
 	"TOK_COMMENT",
+	"TOK_STRING",
 	"TOK_IDENT",
 	"TOK_NUM",
 	"TOK_DIV",
@@ -73,6 +75,7 @@ struct token {
 
 #ifdef MAGNA_MODULE
 /*extern void tokenize_next(enum tok_type *, const char **);*/
+extern void next_line(struct token *);
 extern void tokenize_next(struct token **);
 #else
 #include "lexer.c"

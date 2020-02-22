@@ -3,50 +3,14 @@
 #include "lexer.h"
 #endif
 
-/*void tokenize_next(enum tok_type *op, const char **lex)
+void next_line(struct token *tok)
 {
-	if (*op != TOK_NOP)
-		(*lex)++;
-	while (**lex == ' ') (*lex)++;
+	tok->line.begin = ++tok->lex.end;
+	tok->line.num++;
+}
 
-	switch (**lex) {
-	case '=':
-		*op = TOK_EQU;
-		break;
-	case '+':
-		*op = TOK_ADD;
-		break;
-	case '-':
-		*op = TOK_SUB;
-		break;
-	case '*':
-		*op = TOK_MUL;
-		break;
-	case '/':
-		*op = TOK_DIV;
-		break;
-	case '^':
-		*op = TOK_POW;
-		break;
-	case '(':
-		*op = TOK_OPN;
-		break;
-	case ')':
-		*op = TOK_CLS;
-		break;
-
-	case ';':
-	case '\0':
-		*op = TOK_NOP;
-		break;
-	
-	default:
-		*op = TOK_ARG;
-		break;
-	}
-}*/
-
-void tokenize_next(struct token *tok) {
+void tokenize_next(struct token *tok)
+{
 	enum char_type ct;
 
 next_char:
@@ -56,34 +20,46 @@ next_char:
 		goto end;
 		
 	case CHAR_LFEED:
-		goto line_feed;
+		/* TODO handle missing quote error for strings */
+		next_line(tok);
+		goto next_char;
 		
 	case CHAR_SPACE:
 		tok->lex.end++;
 		goto next_char;
 		
 	case CHAR_SLASH:
-		tok->lex.end++;
-		if (*tok->lex.end == '/') {
-			tok->type = TOK_COMMENT;
-			tok->lex.begin = ++tok->lex.end;
-			goto tokenize_comment;
-		} else {
+		if (*++tok->lex.end != '/') {
 			tok->type = TOK_DIV;
+			goto end;
 		}
+		tok->type = TOK_COMMENT;
+		tok->lex.begin = ++tok->lex.end;
+		
+		/* Skip comment until EOF or newline*/
+		for (; *tok->lex.end && *tok->lex.end != '\n'; tok->lex.end++);
 		goto end;
 		
 	case CHAR_CARET:
-		tok->lex.end++;
-		if (*tok->lex.end == '^') {
+		if (*++tok->lex.end == '^') {
 			tok->type = TOK_POW;
 			tok->lex.end++;
 		}
 		goto end;
 		
 	case CHAR_DQUOTE:
-		/* TODO STRING TOKENIZER */
-		tok->type = TOK_EOF;
+		/* If closing quote detected */
+		if (tok->type == TOK_STRING && *tok->lex.end == '\"') {
+			tok->lex.end++;
+			goto next_char;
+		}
+		tok->type = TOK_STRING;
+		tok->lex.begin = ++tok->lex.end;
+		
+		/* Skip symbols and backslashed symbols until eof until EOF*/
+		for (; *tok->lex.end && *tok->lex.end != '\"'
+			&& ((*tok->lex.end == '\\' && *++tok->lex.end)
+			|| *tok->lex.end != '\n'); tok->lex.end++);
 		goto end;
 		
 	case CHAR_ALPHA:
@@ -107,22 +83,10 @@ next_char:
 	
 	default:
 		/* Be careful, tok_type must be compatible with char_type */
-		tok->type = ct;
+		tok->type = (enum tok_type)ct;
 		tok->lex.end++;
 		goto end;
 	}
-
-tokenize_comment:
-	for (; *tok->lex.end; tok->lex.end++) {
-		if (*tok->lex.end == '\n')
-			goto line_feed;
-		else
-			goto end;
-	}
-
-line_feed:
-	tok->line.begin = ++tok->lex.end;
-	tok->line.num++;
 
 end:
 	return;

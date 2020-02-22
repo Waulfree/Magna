@@ -20,6 +20,7 @@ int prior[] = {
 	PRIOR_UNDEF,	/*TOK_LEAVE*/
 	1,		/*TOK_ENDSTAT*/
 	PRIOR_UNDEF,	/*TOK_COMMENT*/
+	PRIOR_UNDEF,	/*TOK_STRING*/
 	PRIOR_UNDEF,	/*TOK_IDENT*/
 	PRIOR_UNDEF,	/*TOK_NUM*/
 	4,		/*TOK_DIV*/
@@ -52,6 +53,7 @@ next_token:
 	/* Inductor handlers */
 	switch (tok.type) {
 	/* Argument handler */
+	case TOK_STRING:
 	case TOK_IDENT:
 	case TOK_NUM:
 		*--arg_top = tok.val;
