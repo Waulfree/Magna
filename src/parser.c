@@ -3,10 +3,12 @@
 #include "parser.h"
 #endif
 
-#define TOK_STACK_IS_NOT_EMPTY op_top < &op_stack[STACK_LEN]
-#define TOK_STACK_IS_EMPTY op_top == &op_stack[STACK_LEN]
-#define TOP_P prior[*op_top]/*.prior*/
-#define CUR_P prior[tok.type]/*.prior*/
+#define PUSH_OP *--op_top = tok.type
+#define PUSH_ARG *--arg_top = tok.val
+#define POP_OP op_top++
+#define POP_ARG arg_top++
+#define LPRIOR prior[*op_top]/*.prior*/
+#define RPRIOR prior[tok.type]/*.prior*/
 #define LOPR (arg_top + 1)->i
 #define ROPR arg_top->i
 
@@ -42,7 +44,7 @@ void parse(const char *str)
 	tok.type = TOK_SIZE;
 	*op_top = TOK_EOF;
 
-next_token:
+inductor:
 	if (tok.type == TOK_EOF) {
 		printf("Fatal error: unexpected EOF.\n");
 		goto end;
@@ -58,42 +60,48 @@ next_token:
 	case TOK_NUM:
 		*--arg_top = tok.val;
 		numargs++;
-		goto next_token;
+		goto inductor;
 
 	/* Operator handlers */
 	case TOK_EQU:
 	case TOK_POW:
 	case TOK_ENTER:
-		goto induce;
+		PUSH_OP;
+		goto inductor;
 	case TOK_ENDSTAT:
 	case TOK_LEAVE:
-		goto reduce;
+		goto reductor;
 	
 	/* Binary operators */
 	default:
-		if (TOP_P >= CUR_P && numargs > 0) {
-			goto reduce;
+		if (LPRIOR >= RPRIOR) {
+			goto reductor;
 		}
-		goto induce;
+		PUSH_OP;
+		goto inductor;
 	}
 
-reduce:
-	if (TOP_P < CUR_P)
-		goto induce;
+reductor:
+	if (LPRIOR < RPRIOR) {
+		PUSH_OP;
+		goto inductor;
+	}
 	/* Reductor operator handlers */
 	switch (*op_top) {
 	case TOK_EOF:
 		if (tok.type != TOK_EOF)
-			goto next_token;
+			goto inductor;
 		printf("Sucess.\n\n");
 		goto end;
 
 	case TOK_ENTER:
-		op_top++;
-		goto next_token;
+		POP_OP;
+		goto inductor;
 
-#define	BOP_EVAL(op, arg, name) if (numargs < 2) \
-		goto next_token; \
+#define	BOP_EVAL(op, arg, name) if (numargs < 2) {\
+		PUSH_OP; \
+		goto inductor; \
+		} \
 		printf("%i %s %i = ", LOPR, name, ROPR); \
 		LOPR op arg; \
 		goto bop;
@@ -112,19 +120,15 @@ reduce:
 bop:	
 		printf("%i\n", LOPR);
 		numargs--;
-		op_top++;
-		arg_top++;
-		goto reduce;
+		POP_ARG;
+		POP_OP;
+		goto reductor;
 
 	default:	
 		printf("%s\n", tok_names[*op_top]);
-		op_top++;
-		goto reduce;
+		POP_OP;
+		goto reductor;
 	}
-
-induce:
-	*--op_top = tok.type;
-	goto next_token;
 
 end:
 	return;
