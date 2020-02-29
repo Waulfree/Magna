@@ -78,17 +78,15 @@ inductor:
 	case TOK_EQU:
 	case TOK_POW:
 	case TOK_ENTER:
+		if (numargs >= 1)
+			numargs--;
 		PUSH_OP;
 		goto induce_next;
 
 	/* Left-associative operator handlers */
 	case TOK_ENDSTAT:
 	case TOK_LEAVE:
-	case TOK_EOF:	
-		if (LARGS > numargs + 1) {
-			printf("Missing arguments\n");
-			goto end;
-		}
+	case TOK_EOF:
 		mode = REDUCE_STATEMENT;
 		goto reductor;
 	
@@ -102,14 +100,14 @@ inductor:
 			mode = REDUCE_POSTFIX_EXPRESSION;
 			goto reductor;
 		/* Used to handle standart (INFIX) notation */
-		} else if (
-			LPRIOR > RPRIOR && (mode == REDUCE_PREFIX_EXPRESSION
+		} else if (LPRIOR > RPRIOR && (mode == REDUCE_PREFIX_EXPRESSION
 			|| numargs >= 1)) {
 			numargs--;
 			mode = REDUCE_INFIX_EXPRESSION;
 			goto reductor;
-		} else if (numargs >= 1)
+		} else if (numargs >= 1) {
 			numargs--;
+		}
 		PUSH_OP;
 		goto induce_next;
 	} /* * * * 1 2 3 4 + + 1 2 3 */
@@ -159,6 +157,10 @@ bop:
 selector:
 	switch (mode) {
 	case REDUCE_STATEMENT:
+		if (LARGS > &arg_stack[STACK_LEN] - arg_top) {
+			printf("Missing arguments\n");
+			goto end;
+		}
 		/* Reduce until end of statement */
 		if (LPRIOR == PRIOR_UNDEF)
 			mode = REDUCE_POSTFIX_EXPRESSION;
