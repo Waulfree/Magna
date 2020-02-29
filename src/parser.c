@@ -103,8 +103,8 @@ inductor:
 			goto reductor;
 		/* Used to handle standart (INFIX) notation */
 		} else if (
-			LPRIOR >= RPRIOR && (mode == REDUCE_PREFIX_EXPRESSION
-			|| numargs == 2)) {
+			LPRIOR > RPRIOR && (mode == REDUCE_PREFIX_EXPRESSION
+			|| numargs >= 1)) {
 			numargs--;
 			mode = REDUCE_INFIX_EXPRESSION;
 			goto reductor;
@@ -165,7 +165,7 @@ selector:
 		goto reductor;
 
 	case REDUCE_INFIX_EXPRESSION:
-		if (LPRIOR > RPRIOR) 
+		if (LPRIOR >= RPRIOR) 
 			goto reductor;
 		PUSH_OP;
 		goto induce_next;
