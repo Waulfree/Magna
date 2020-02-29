@@ -7,102 +7,126 @@
 #define PUSH_ARG *--arg_top = tok.val
 #define POP_OP op_top++
 #define POP_ARG arg_top++
-#define LPRIOR prior[*op_top]/*.prior*/
-#define RPRIOR prior[tok.type]/*.prior*/
+#define LPRIOR op_pty[*op_top].prior
+#define RPRIOR op_pty[tok.type].prior
+#define LARGS op_pty[*op_top].numargs
+#define RARGS op_pty[tok.type].numargs
 #define LOPR (arg_top + 1)->i
 #define ROPR arg_top->i
 
-/* Token priorities */
-int prior[] = {
-	2,		/*TOK_EQU*/
-	3,		/*TOK_SUB*/
-	3,		/*TOK_ADD*/
-	4,		/*TOK_MUL*/
-	PRIOR_UNDEF,	/*TOK_ENTER*/
-	PRIOR_UNDEF,	/*TOK_LEAVE*/
-	PRIOR_UNDEF,	/*TOK_ENDSTAT*/
-	PRIOR_UNDEF,	/*TOK_COMMENT*/
-	PRIOR_UNDEF,	/*TOK_STRING*/
-	PRIOR_UNDEF,	/*TOK_IDENT*/
-	PRIOR_UNDEF,	/*TOK_NUM*/
-	4,		/*TOK_DIV*/
-	5,		/*TOK_POW*/
-	PRIOR_UNDEF	/*TOK_EOF*/
+struct op_properties {
+	int prior;
+	int numargs;
+};
+
+struct op_properties op_pty[] = {
+	{2, 2},			/*TOK_EQU*/
+	{3, 2},			/*TOK_SUB*/
+	{3, 2},			/*TOK_ADD*/
+	{4, 2},			/*TOK_MUL*/
+	{PRIOR_UNDEF, 0},	/*TOK_ENTER*/
+	{PRIOR_UNDEF, 0},	/*TOK_LEAVE*/
+	{PRIOR_UNDEF, 0},	/*TOK_ENDSTAT*/
+	{PRIOR_UNDEF, 0},	/*TOK_COMMENT*/
+	{PRIOR_UNDEF, 0},	/*TOK_STRING*/
+	{PRIOR_UNDEF, 0},	/*TOK_IDENT*/
+	{PRIOR_UNDEF, 0},	/*TOK_NUM*/
+	{4, 2},			/*TOK_DIV*/
+	{5, 2},			/*TOK_POW*/
+	{PRIOR_UNDEF, 0}	/*TOK_EOF*/
 };
 
 void parse(const char *str)
 {
+	/* Declarations */
+	enum reductor_mode mode;
 	struct token tok;
 	int numargs = 0;
-	
+
+	/* Stacks */
 	enum tok_type op_stack[STACK_LEN];
 	enum tok_type *op_top = &op_stack[STACK_LEN - 1];
 	union unitype arg_stack[STACK_LEN];
 	union unitype *arg_top = &arg_stack[STACK_LEN];
 	
+	/* Init */
 	tok.lex.begin = tok.lex.end = (char *)str;
-	tok.type = TOK_SIZE;
 	*op_top = TOK_EOF;
 
-inductor:
-	if (tok.type == TOK_EOF) {
-		printf("Fatal error: unexpected EOF.\n");
-		goto end;
-	} else {
-		tokenize_next(&tok);
-	}
+induce_next:
+	tokenize_next(&tok);
 
-	/* Inductor handlers */
+inductor:
 	switch (tok.type) {
-	/* Argument handler */
+	/* Argument handlers */
 	case TOK_STRING:
 	case TOK_IDENT:
 	case TOK_NUM:
-		*--arg_top = tok.val;
 		numargs++;
-		goto inductor;
+		/* Used to handle straight (PREFIX) polish notation.
+		 * When the number of arguments exceed after operator,
+		 * We consider this expression as prefix one. */
+		if (LARGS && numargs > LARGS) {
+			numargs -= 2;
+			mode = REDUCE_PREFIX_EXPRESSION;
+			goto reductor;
+		}
+		PUSH_ARG;
+		goto induce_next;
 
-	/* Operator handlers */
+	/* Right-associative operator handlers */
 	case TOK_EQU:
 	case TOK_POW:
 	case TOK_ENTER:
 		PUSH_OP;
-		goto inductor;
+		goto induce_next;
+
+	/* Left-associative operator handlers */
 	case TOK_ENDSTAT:
 	case TOK_LEAVE:
+	case TOK_EOF:	
+		if (LARGS > numargs + 1) {
+			printf("Missing arguments\n");
+			goto end;
+		}
+		mode = REDUCE_STATEMENT;
 		goto reductor;
 	
-	/* Binary operators */
 	default:
-		if (LPRIOR >= RPRIOR) {
+		/* Used to handle reversed (POSTFIX) polish notation. 
+		 * When number of arguments exceed before operator,
+		 * We consider this expression as postfix */
+		if (numargs > 2) {
+			numargs--;
+			PUSH_OP;
+			mode = REDUCE_POSTFIX_EXPRESSION;
 			goto reductor;
-		}
+		/* Used to handle standart (INFIX) notation */
+		} else if (LPRIOR >= RPRIOR && numargs == 1) {
+			numargs--;
+			mode = REDUCE_INFIX_EXPRESSION;
+			goto reductor;
+		} else if (numargs >= 1)
+			numargs--;
 		PUSH_OP;
-		goto inductor;
+		goto induce_next;
 	}
 
 reductor:
-	if (LPRIOR < RPRIOR) {
-		PUSH_OP;
-		goto inductor;
-	}
 	/* Reductor operator handlers */
 	switch (*op_top) {
 	case TOK_EOF:
-		if (tok.type != TOK_EOF)
-			goto inductor;
+		if (tok.type != TOK_EOF) {
+			goto induce_next;
+		}
 		printf("Sucess.\n\n");
 		goto end;
 
 	case TOK_ENTER:
 		POP_OP;
-		goto inductor;
+		goto induce_next;
 
-#define	BOP_EVAL(op, arg, name) if (numargs < 2) {\
-		PUSH_OP; \
-		goto inductor; \
-		} \
-		printf("%i %s %i = ", LOPR, name, ROPR); \
+#define	BOP_EVAL(op, arg, name) printf("%i %s %i = ", LOPR, name, ROPR); \
 		LOPR op arg; \
 		goto bop;
 	case TOK_EQU:
@@ -119,15 +143,38 @@ reductor:
 		BOP_EVAL(=, pow(LOPR, ROPR), "^^");
 bop:	
 		printf("%i\n", LOPR);
-		numargs--;
 		POP_ARG;
 		POP_OP;
-		goto reductor;
+		goto selector;
 
 	default:	
 		printf("%s\n", tok_names[*op_top]);
 		POP_OP;
+		goto selector;
+	}
+
+selector:
+	switch (mode) {
+	case REDUCE_STATEMENT:
+		/* Reduce until end of statement */
+		if (LPRIOR == PRIOR_UNDEF)
+			mode = REDUCE_POSTFIX_EXPRESSION;
 		goto reductor;
+
+	case REDUCE_INFIX_EXPRESSION:
+		if (LPRIOR > RPRIOR) 
+			goto reductor;
+		PUSH_OP;
+		goto induce_next;
+
+	case REDUCE_POSTFIX_EXPRESSION:
+		goto induce_next;
+	
+	/* After reduction of prefix expression
+	 * We will run inductor at the same state again
+	 * To push our exceed argument onto the stack.*/
+	case REDUCE_PREFIX_EXPRESSION:
+		goto inductor;
 	}
 
 end:

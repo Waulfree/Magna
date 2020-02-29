@@ -41,6 +41,7 @@ const char *tok_names[] = {
 	"TOK_DIV",
 	"TOK_POW",
 	"TOK_EOF",
+	"TOK_SIZE"
 };
 
 struct line {

@@ -7,6 +7,13 @@
 
 #define STACK_LEN 32
 
+enum reductor_mode {
+	REDUCE_STATEMENT, /* Reduce every operator in statement */
+	REDUCE_INFIX_EXPRESSION, /* Reduce only top priority operators */
+	REDUCE_POSTFIX_EXPRESSION,
+	REDUCE_PREFIX_EXPRESSION
+};
+
 /*
 enum fsm_state {
 	PDA_INIT,
