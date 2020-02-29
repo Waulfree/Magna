@@ -102,7 +102,9 @@ inductor:
 			mode = REDUCE_POSTFIX_EXPRESSION;
 			goto reductor;
 		/* Used to handle standart (INFIX) notation */
-		} else if (LPRIOR >= RPRIOR && numargs == 1) {
+		} else if (
+			LPRIOR >= RPRIOR && (mode == REDUCE_PREFIX_EXPRESSION
+			|| numargs == 2)) {
 			numargs--;
 			mode = REDUCE_INFIX_EXPRESSION;
 			goto reductor;
@@ -110,7 +112,8 @@ inductor:
 			numargs--;
 		PUSH_OP;
 		goto induce_next;
-	}
+	} /* * * * 1 2 3 4 + + 1 2 3 */
+	/* 10 + + 1 ((* + 2 3 4) + 5 * 6) 7 * */
 
 reductor:
 	/* Reductor operator handlers */
