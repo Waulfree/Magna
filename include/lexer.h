@@ -1,6 +1,6 @@
 #ifndef MAGNA_LEXER_HEADER_GUARD
 
-#include <stdint.h>
+#include <stdlib.h>
 
 #define PRIOR_UNDEF 0
 
